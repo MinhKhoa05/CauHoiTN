@@ -12,18 +12,41 @@ class CauhoiTN {
         string dapanA;
         string dapanB;
         char dapandung;
+
+        string XuLyChuoi(const string& str) {
+            string result;
+            bool lastWasSpace = false;
+
+            for (char c : str) {
+                if (std::isspace(c)) {
+                    if (!lastWasSpace) {
+                        result += c;
+                    }
+                    lastWasSpace = true;
+                } else {
+                    result += c;
+                    lastWasSpace = false;
+                }
+            }
+            return result;
+        }
+
     public:
         // Nhap cau hoi va dap an tu nguoi dung
         void nhap() {
             cin.ignore();
+            
             cout << "Nhap noi dung cau hoi: ";
             getline(cin, cauhoi);
+            cauhoi = XuLyChuoi(cauhoi);
 
             cout << "Nhap noi dung dap an A: ";
             getline(cin, dapanA);
+            dapanA = XuLyChuoi(dapanA);
 
             cout << "Nhap noi dung dap an B: ";
             getline(cin, dapanB);
+            dapanB = XuLyChuoi(dapanB);
 
             do {
                 cout << "Dap an dung (A or B): ";

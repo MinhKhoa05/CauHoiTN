@@ -2,92 +2,52 @@
 /* ----- Dinh nghia ham ----- */
 char Menu(string dethi);
 void OpenFile(ifstream& f);
-void themCauHoi(ofstream& f);
+void FileNew(ofstream& f);
+void NewQuestion(ofstream& f);
+void ListQuestions();
+void SaveAs(ofstream& f);
+void TakeTheExam();
+void CapNhatMangDong(CauhoiTN cau);
 
 CauhoiTN* cauhoi = nullptr;
 int soCau = 0;
 int diem = 0;
+string dethi = "DeMoi.TTN";
+
 int main() {
     cout << "-------------------- CHUONG TRINH TAO DE THI TRAC NGHIEM --------------------" << endl;
     
     ifstream fin;
     ofstream fout;
 
-    string dethi = "DeMoi.TTN";
-    string temp;
-
-    fin.open(dethi);
     bool running = true;
     while (running) {
+        fin.open(dethi);
         switch(Menu(dethi)) {
             case '1':
-                cout << "Nhap ten file: ";
-                cin >> temp;
-                temp += ".TTN";
-                fin.close();
-                fin.open(temp);
-                if (!fin.good()) {
-                    cout << "Khong ton tai file " << temp << endl;
-                } else {
-                    OpenFile(fin);
-                    dethi = temp;
-                    fin.close();
-                }
+                fin.close(); // Dong file cu truoc khi mo file
+                OpenFile(fin);
                 break;
 
             case '2':
-                cout << "Nhap ten file: ";
-                cin >> dethi;
-                dethi += ".TTN";
-                fout.open(dethi);
-                fout << "";
-                delete[] cauhoi;
-                soCau = 0;
-                cout << "Ban da tao mot de thi moi co ten " << dethi << endl;
-                fout.close();
+                FileNew(fout);
                 break;
 
             case '3':
-                fout.open(dethi, ios::app);
-                if (!fout.is_open()) {
-                    cout << "Khong the mo tep";
-                    break;
-                }
-                themCauHoi(fout);
-                fout.close();
+                NewQuestion(fout);
                 break;
 
             case '4':
-                cout << "\n---------- " << dethi << " ----------" << endl;
-                for (int i = 0; i < soCau; i++) {
-                    cout << "----------" << endl;
-                    cout << "Cau " << i + 1 << ": ";
-                    cauhoi[i].xuat();
-                    cout << endl;
-                }
+                ListQuestions();
                 break;
             
             case '5':
-                cout << "Nhap ten file: ";
-                cin >> temp;
-                fout.open(temp + ".TTN");
-                for (int i = 0; i < soCau; i++) {
-                    cauhoi[i].ghifile(fout);
-                }
-                cout << "Da luu cau hoi vao file " << temp + ".TTN" << endl;
-                fout.close();
+                fin.close();
+                SaveAs(fout);
                 break;
 
             case '6':
-                cout << "----------- BAI KIEM TRA ----------" << endl;
-                for (int i = 0; i < soCau; i++) {
-                    cout << "----------" << endl;
-                    cout << "Cau " << i + 1 << ": ";
-                    if(cauhoi[i].kiemtra()) {
-                        diem ++;
-                    }
-                }
-                cout << "Diem so: " << diem << "/" << soCau << endl;
+                TakeTheExam();
                 break;
             
             case '7':
@@ -99,35 +59,17 @@ int main() {
     return 0;
 }
 
-/* ----- Nhap du lieu de thi ----- */
-void OpenFile(ifstream& f) {
-    while (!f.eof()) {
-        CauhoiTN temp;
-        temp.docfile(f);
-        soCau++;
-
-        CauhoiTN* newCauhoi = new CauhoiTN[soCau];
-        for (int i = 0; i < soCau - 1; i++) {
-            newCauhoi[i] = cauhoi[i];
-        }
-        newCauhoi[soCau - 1] = temp;
-        delete[] cauhoi;
-        cauhoi = newCauhoi;
-    }
-    if (soCau > 0) soCau--;
-}
-
 /* ----- Menu ----- */
 char Menu(string dethi) {
     char choice;
     cout << "\n------- " << dethi << " --------" << endl;
-    cout << "1. Mo de thi khac da co (FILE OPEN)." << endl;
-    cout << "2. Tao de thi moi (FILE NEW). " << endl;
-    cout << "3. Them cau hoi. " << endl;
-    cout << "4. Danh sach cau hoi." << endl;
-    cout << "5. Luu lai de thi (SAVE AS)." << endl;
-    cout << "6. Bat dau thi." << endl;
-    cout << "7. Roi khoi chuong trinh. " << endl;
+    cout << "1. Mo de thi (Open File)" << endl;
+    cout << "2. Tao de thi moi (File New)" << endl;
+    cout << "3. Cau hoi moi (New Question)" << endl;
+    cout << "4. Danh sach cau hoi (List Questions)" << endl;
+    cout << "5. Luu lai de thi (Save As)." << endl;
+    cout << "6. Lam kiem tra (Take The Exam)" << endl;
+    cout << "7. Roi khoi chuong trinh (Exit)" << endl;
     cout << "Nhap lua chon: ";
     cin >> choice;
 
@@ -135,6 +77,7 @@ char Menu(string dethi) {
         cout << "Khong co lua chon " << choice << ". Hay chon lai: ";
         cin >> choice;
     }
+
     return choice;
 }
 
@@ -145,8 +88,7 @@ string chuyenVietThuong(string str) {
 }
 /* ----- Kiem tra noi dung co giong nhau khong ----- */
 bool giongnhau(CauhoiTN cau1, CauhoiTN cau2) {
-    return
-        chuyenVietThuong(cau1.cauhoi) == chuyenVietThuong(cau2.cauhoi) 
+    return chuyenVietThuong(cau1.cauhoi) == chuyenVietThuong(cau2.cauhoi) 
         && chuyenVietThuong(cau1.dapanA) == chuyenVietThuong(cau2.dapanA)
         && chuyenVietThuong(cau1.dapanB) == chuyenVietThuong(cau2.dapanB);
 }
@@ -161,20 +103,102 @@ bool check(CauhoiTN temp) {
     return false;
 }
 
-void themCauHoi(ofstream& f) {
-    CauhoiTN temp;
+/* ----- Nhap du lieu de thi ----- */
+void OpenFile(ifstream& f) {
+    string filename;
+    cout << "Nhap ten file: ";
+    cin >> filename;
 
-    temp.nhap();    
-    if (check(temp)) return;
+    filename += ".TTN";
+    f.open(filename);
 
-    temp.ghifile(f);
-    soCau++;
-    CauhoiTN* newCauhoi = new CauhoiTN[soCau];
-    for (int i = 0; i < soCau - 1; i++) {
-        newCauhoi[i] = cauhoi[i];
+    if (!f.good()) {
+        cout << "Khong ton tai file " << filename << endl;
+        return;
     }
-    newCauhoi[soCau - 1] = temp;
+    
+    while (!f.eof()) {
+        CauhoiTN cauhoi_moi;
+        cauhoi_moi.docfile(f);
+        CapNhatMangDong(cauhoi_moi);
+    }
+    dethi = filename;
+    f.close();
+    // Tru so cau di 1 vi dong cuoi la dong trong
+    if (soCau > 0) soCau--;
+}
 
+/* ----- Cap nhat mang dong ----- */
+void CapNhatMangDong(CauhoiTN cau) {
+    soCau ++;
+    CauhoiTN* cauhoi_moi = new CauhoiTN[soCau];
+    
+    for (int i = 0; i < soCau - 1; i++) {
+        cauhoi_moi[i] = cauhoi[i];
+    }
+
+    cauhoi_moi[soCau - 1] = cau;
     delete[] cauhoi;
-    cauhoi = newCauhoi;
+    cauhoi = cauhoi_moi;
+}
+
+/* ----- Tao de thi moi ----- */
+void FileNew(ofstream& f) {
+    cout << "Nhap ten file: ";
+    cin >> dethi;
+    dethi += ".TTN";
+    f.open(dethi);
+
+    // Reset du lieu dang duoc luu trong cac bien
+    delete[] cauhoi;
+    f << "";
+    soCau = 0;
+
+    cout << "Ban da tao mot de thi moi co ten " << dethi << endl;
+    f.close();
+}
+
+void NewQuestion(ofstream& f) {
+    f.open(dethi, ios::app);
+    CauhoiTN cauhoi_moi;
+
+    cauhoi_moi.nhap();    
+    if (check(cauhoi_moi)) return;
+
+    cauhoi_moi.ghifile(f);
+
+    CapNhatMangDong(cauhoi_moi);
+    f.close();
+}
+
+void ListQuestions() {
+    cout << "\n---------- " << dethi << " ----------" << endl;
+    for (int i = 0; i < soCau; i++) {
+        cout << "----------" << endl;
+        cout << "Cau " << i + 1 << ": ";
+        cauhoi[i].xuat();
+        cout << endl;
+    }
+}
+
+void SaveAs(ofstream& f) {
+    cout << "Nhap ten file: ";
+    cin >> dethi;
+    dethi += ".TTN";
+    f.open(dethi);
+    for (int i = 0; i < soCau; i++) {
+        cauhoi[i].ghifile(f);
+    }
+    cout << "Da luu cau hoi vao file " << dethi << endl;
+    f.close();
+}
+
+void TakeTheExam() {
+    cout << "----------- KIEM TRA ----------" << endl;
+    for (int i = 0; i < soCau; i++) {
+        cout << "Cau " << i + 1 << ": ";
+        if(cauhoi[i].kiemtra()) diem ++;
+        cout << "----------" << endl;
+    }
+    cout << "Diem so: " << diem << "/" << soCau << endl;
 }
